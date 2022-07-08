@@ -1,13 +1,28 @@
+// External Dependencies
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+import { ThemeProvider, createTheme } from "@mui/material/styles"
+
+// Internal Dependencies
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: ['Secular One', 'Cabin']
+  }
+});
+
+theme.typography.h1 = {
+  fontFamily: 'Secular One'
+};
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );
 
