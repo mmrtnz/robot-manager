@@ -10,13 +10,18 @@ module.exports = {
     
     try {
       const snapshot = await get(q); 
-      const user = snapshot.val();
-
-      if (!user || user?.password !== password) {
+      const dbData = snapshot.val();
+      
+      if (!dbData) {
+        return h.response(null).code(401);
+      }
+      
+      const dbPassword = dbData[Object.keys(dbData)[0]].password;
+      if (dbPassword !== password) { 
         return h.response(null).code(401);
       }
 
-      return snapshot.val();
+      return h.response(dbData).code(200);
     } catch (errorObject) {
       console.log('Error reading users: ' + errorObject);
       return errorObject;

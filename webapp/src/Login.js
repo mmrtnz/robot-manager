@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Button, styled, TextField, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 // Internal Dependencies
 import { ReactComponent as RobotHead1 } from './assets/robot-head-1.svg';
@@ -24,6 +25,7 @@ const defaultForm = {
 	usernameError: null,
 	password: '',
 	passwordError: null,
+	submitError: null
 };
 
 const validateForm = form => {
@@ -61,14 +63,20 @@ const LoginTextField = ({ form, formKey, ...props}) => {
 	);
 };
 
-const Login = () => {
+const Login = props => {
 	const theme = useTheme();
 	const primaryColor = theme.palette.primary.main;
 	const [form, setForm] = useState(defaultForm);
+	const navigate = useNavigate();
 
 	// Update state and reset related error message
 	const handleChange = ({ target: { id, value } }) => {
-		setForm({ ...form, [id]: value, [`${id}Error`]: null })
+		setForm({
+			...form,
+			[id]: value,
+			[`${id}Error`]: null,
+			submitError: null
+		})
 	};
 
 	const handleSubmit = () => {
@@ -80,7 +88,10 @@ const Login = () => {
 
 		postLogin(form)
 			.then(res => {
-				console.log('res', res);
+				navigate('/dashboard', { replace: true });
+			})
+			.catch(err => {
+				setForm({...form, submitError: 'Invalid login'})
 			});
 	};
 
@@ -109,6 +120,11 @@ const Login = () => {
 			>
 				Login
 			</Button>
+			{form.submitError && (
+				<Typography variant="subtitle1" sx={{ color: theme.palette.error.main, mt: 2 }}>
+					Invalid username and  password 
+				</Typography>
+			)}
 		</Container>
 	);
 }
