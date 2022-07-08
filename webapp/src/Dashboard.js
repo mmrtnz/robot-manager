@@ -9,11 +9,12 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { blue, brown, red, teal } from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
 
 // Internal Dependencies
+import AppBar from './AppBar';
 import { getBots } from './api';
 import { ReactComponent as RobotHead2 } from './assets/robot-head-2.svg';
 import { ReactComponent as Bender } from './assets/bender.svg';
@@ -68,7 +69,8 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <Container>
-        <CircularProgress /> Loading robots...
+        <CircularProgress />
+        <Typography variant="body2">Loading robots...</Typography>
       </Container>
     );
   }
@@ -84,27 +86,29 @@ const Dashboard = () => {
   }
 
   return (
-    <Container>
-      <Typography variant="h5">Robot Dashboard</Typography>
-      <List>
-        {Object.keys(bots).map((botId) => {
-          const { name } = bots[botId];
-          const { IconComponent } = getStylesConfig(botId);          
-          return (
-            <Card sx={{ mb: 1 }} variant="outlined">
-              <ListItem>
-                <ListItemIcon>
-                  <IconComponent height="3em" width="auto"/>
-                </ListItemIcon>
-                <ListItemText sx={{ ml: '2em' }}>
-                  <Typography variant="body1">{name}</Typography>
-                </ListItemText>
-              </ListItem>
-            </Card>
-          );
-        })}
-      </List>
-    </Container>
+    <React.Fragment>
+      <AppBar />
+      <Container sx={{ mt: 12 }}>
+        <List>
+          {Object.keys(bots).map((botId) => {
+            const { name } = bots[botId];
+            const { IconComponent } = getStylesConfig(botId);          
+            return (
+              <Card sx={{ mb: 1 }} variant="outlined" key={botId} >
+                <ListItem>
+                  <ListItemIcon>
+                    <IconComponent height="3em" width="100%"/>
+                  </ListItemIcon>
+                  <ListItemText sx={{ ml: '2em' }}>
+                    <Typography variant="body1">{name}</Typography>
+                  </ListItemText>
+                </ListItem>
+              </Card>
+            );
+          })}
+        </List>
+      </Container>
+    </React.Fragment>
   );
 }
 
