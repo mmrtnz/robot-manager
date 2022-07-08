@@ -8,5 +8,10 @@ exports.plugin = {
       path: '/login',
       config: require('./controllers/login'),
     });
+    server.route({
+      method: 'GET',
+      path: '/bots',
+      config: require('./controllers/bots'),
+    });
   }
 }

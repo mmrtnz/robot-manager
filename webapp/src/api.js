@@ -20,3 +20,19 @@ export const postLogin = ({ username, password }) => {
     return res.json()
   });
 };
+
+
+export const getBots = () => {
+  const url = new URL('bots', 'http://localhost:8080');
+
+  return fetch(url, {
+    method: 'GET',
+  })
+  .then(res => {
+    if (!res.ok) {
+      throw 'Unknown error'
+    }
+    
+    return res.json()
+  });
+};
