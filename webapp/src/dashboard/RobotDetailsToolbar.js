@@ -14,11 +14,12 @@ import {
   Typography
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const TASK_TYPES = ['clean', 'resupply', 'dance'];
 
 const RobotDetailsToolbar = (props) => {
-  const { bot, onAssign } = props;
+  const { bot, onAssign, onUnassign } = props;
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleClickShowPopper = (e) => {
@@ -30,6 +31,8 @@ const RobotDetailsToolbar = (props) => {
 
   const handleClickAway = () => setAnchorEl(null);
 
+  const isBotBusy = bot.status === 'busy' || bot.status === 'error';
+
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', mb: 4 }}>
@@ -40,15 +43,25 @@ const RobotDetailsToolbar = (props) => {
 
       <ClickAwayListener onClickAway={handleClickAway}>
         <Button
-          disabled={Boolean(bot.task)}
+          disabled={isBotBusy}
           onClick={handleClickShowPopper}
           size="small"
           startIcon={<AddIcon/>}
+          sx={{ mr: 2 }}
           variant="contained"
         >
           New Task
         </Button>
       </ClickAwayListener>
+      <Button
+        disabled={!isBotBusy}
+        onClick={() => onUnassign()}
+        size="small"
+        startIcon={<CancelIcon/>}
+        variant="outlined"
+      >
+        Stop Task
+      </Button>
       </Box>
         <Popper id={id} open={open} anchorEl={anchorEl}>
           <Paper>

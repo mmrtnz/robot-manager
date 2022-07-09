@@ -7,7 +7,7 @@ import {
 
 // InternalDependencies
 import RobotDetailsToolbar from './RobotDetailsToolbar';
-import { postTask } from '../api';
+import { postTask, stopTask } from '../api';
 import { GlobalContext } from '../App';
 
 const RobotDetails = (props) => {
@@ -18,9 +18,17 @@ const RobotDetails = (props) => {
     postTask(globalStore.user, bot, task);
   }
 
+  const handleUnassignTask = () => {
+    stopTask(globalStore.user, bot);
+  };
+
   return (
     <Card sx={{ p: 2 }}>
-      <RobotDetailsToolbar bot={bot} onAssign={handleAssignTask} />
+      <RobotDetailsToolbar
+        bot={bot}
+        onAssign={handleAssignTask}
+        onUnassign={handleUnassignTask}
+      />
       <Typography variant="subtitle1">History</Typography>
     </Card>
   );

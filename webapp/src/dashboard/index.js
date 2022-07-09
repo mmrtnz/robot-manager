@@ -24,7 +24,22 @@ const Dashboard = () => {
   const { globalStore: { user, socket } } = useContext(GlobalContext);
   const theme = useTheme();
 
-  console.log('socket', socket);
+
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
+
+    const refresh = updatedBot => {
+      setBots({ ...bots, [updatedBot.id]: updatedBot });
+      if (currentBot?.id === updatedBot.id) {
+        setCurrentBot(updatedBot);
+      }
+    };
+
+    socket.on('task_created', refresh);
+    socket.on('task_stopped', refresh);
+  }, [socket, bots, currentBot]);
   
   useEffect(() => {
     if (!user) {
@@ -32,7 +47,9 @@ const Dashboard = () => {
     }
 
     getBots(user)
-      .then(res => setBots(res))
+      .then(res => {
+        setBots(res);
+      })
       .catch(err => {
         console.log('err', err);
         setApiError(errorMessage)

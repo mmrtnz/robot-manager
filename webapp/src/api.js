@@ -71,3 +71,17 @@ export const postTask = (user, bot, task) => {
   })
   .catch(() => {});
 }
+
+export const stopTask = (user, bot) => {
+  const url = new URL('tasks/stop', BASE_URL);
+
+  return fetch(url, {
+    method: 'POST',
+    headers: getAuthHeaders(user),
+    body: JSON.stringify({ bot })
+  })
+  .then(res => {
+    return res.json()
+  })
+  .catch(() => {});
+}

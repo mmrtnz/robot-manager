@@ -24,11 +24,7 @@ const login = async (request, h) => {
     }
 
     // Add user data to session cookie
-    request.cookieAuth.set({
-      name: user.name,
-      username: user.username,
-      password: user.password,
-    });
+    request.cookieAuth.set({ ...user });
 
     return h.response(user).code(200);
   } catch (errorObject) {

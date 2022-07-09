@@ -1,6 +1,7 @@
 'use strict'
 
 const { login, logout } = require('./controllers/session');
+const { startTask, stopTask } = require('./controllers/tasks');
 
 exports.plugin = {
   name: 'router',
@@ -29,7 +30,12 @@ exports.plugin = {
     server.route({
       method: 'POST',
       path: '/tasks',
-      config: require('./controllers/tasks'),
+      handler: startTask,
+    });
+    server.route({
+      method: 'POST',
+      path: '/tasks/stop',
+      handler: stopTask,
     });
   }
 }
