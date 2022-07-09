@@ -5,8 +5,8 @@ import Cookies from 'js-cookie';
 
 // Internal Dependencies
 import AppBar from './AppBar';
-import Login from './Login';
-import Dashboard from './Dashboard';
+import Login from './login';
+import Dashboard from './dashboard';
 
 const defaultContext = { user: null };
 

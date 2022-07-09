@@ -7,9 +7,9 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 // Internal Dependencies
-import { GlobalContext } from './App';
-import { ReactComponent as RobotHead1 } from './assets/robot-head-1.svg';
-import { postLogin } from './api';
+import { GlobalContext } from '../App';
+import { ReactComponent as RobotHead1 } from '../assets/robot-head-1.svg';
+import { postLogin } from '../api';
 
 const AppTitle = styled(Typography)(`
 	color: ${props => props.color};
