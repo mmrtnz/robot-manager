@@ -9,13 +9,13 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { blue, brown, red, teal } from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
 
 // Internal Dependencies
-import AppBar from './AppBar';
-import { getBots } from './api';
+import { getBots, getSession } from './api';
+import { GlobalContext } from './App';
 import { ReactComponent as RobotHead2 } from './assets/robot-head-2.svg';
 import { ReactComponent as Bender } from './assets/bender.svg';
 import { ReactComponent as Toaster } from './assets/toaster.svg';
@@ -57,14 +57,23 @@ const Dashboard = () => {
   const [bots, setBots] = useState({});
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { globalStore: { user } } = useContext(GlobalContext);
   const theme = useTheme();
 
+
   useEffect(() => {
-    getBots()
+    if (!user) {
+      return;
+    }
+
+    getBots(user)
       .then(res => setBots(res))
-      .catch(err => setApiError(errorMessage))
+      .catch(err => {
+        console.log('err', err);
+        setApiError(errorMessage)
+      })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -87,7 +96,6 @@ const Dashboard = () => {
 
   return (
     <React.Fragment>
-      <AppBar />
       <Container sx={{ mt: 12 }}>
         <List>
           {Object.keys(bots).map((botId) => {

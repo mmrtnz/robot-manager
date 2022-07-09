@@ -1,11 +1,13 @@
 // External Dependencies
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { Button, styled, TextField, Typography } from '@mui/material';
 import { Container } from '@mui/system';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 // Internal Dependencies
+import { GlobalContext } from './App';
 import { ReactComponent as RobotHead1 } from './assets/robot-head-1.svg';
 import { postLogin } from './api';
 
@@ -21,9 +23,9 @@ const AppTitle = styled(Typography)(`
 `);
 
 const defaultForm = {
-	username: '',
+	username: 'user1',
 	usernameError: null,
-	password: '',
+	password: 'user1',
 	passwordError: null,
 	submitError: null
 };
@@ -66,6 +68,7 @@ const LoginTextField = ({ form, formKey, ...props}) => {
 const Login = props => {
 	const theme = useTheme();
 	const primaryColor = theme.palette.primary.main;
+	const { globalStore, setGlobalStore } = useContext(GlobalContext);
 	const [form, setForm] = useState(defaultForm);
 	const navigate = useNavigate();
 
@@ -88,6 +91,10 @@ const Login = props => {
 
 		postLogin(form)
 			.then(res => {
+				// Persist login
+				Cookies.set('user', JSON.stringify(res), { expires: 1 });
+
+				setGlobalStore({...globalStore, user: res })
 				navigate('/dashboard', { replace: true });
 			})
 			.catch(err => {

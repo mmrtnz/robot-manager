@@ -5,6 +5,9 @@ const dotenv = require('dotenv');
 const Hapi = require('@hapi/hapi');
 const { initializeApp } = require("firebase/app");
 
+// Internal Dependencies
+const { getUser } = require('./services/user');
+
 dotenv.config();
 
 const firebaseConfig = {
@@ -35,6 +38,41 @@ const init = async () => {
 
   server.app.firebase = initializeApp(firebaseConfig);
   server.app.dbUrl = 'https://robot-manager-c6b5d-default-rtdb.firebaseio.com/';
+
+  await server.register(require('@hapi/cookie'));
+  await server.register(require('@hapi/basic'));
+
+  /**
+   * First attempt at auth was via server-side cookies/sessions but stategy was
+   * 'missing authentication' according to frontend. Switched to basic auth and
+   * client-side cookies instead.
+   * */
+  server.auth.strategy('session', 'cookie', {
+    cookie: {
+      name: 'session',
+      password: 'robotsrobotsrobotsrobotsrobotsrobots',
+      isSecure: false, // Allows us to work via http in localhost
+    },
+    validateFunc: async (request, session, callback) => {
+      // TODO: check db w/ cookie
+      return { err, valid: true, credentials: { foo: 'bar' } };
+    },
+  });
+
+
+  server.auth.strategy('simple', 'basic', {
+    validate: async (request, username, password, h) => {
+      const user = await getUser(request.server.app.firebase, username, password);
+
+      if (!user) {
+        return { isValid: false, credentials: {} };
+      }
+
+      return { isValid: true, credentials: user };
+    },
+  });
+
+  server.auth.default({ strategy: 'simple' });
 
   await server.register(require('./routes'));
   await server.start();
