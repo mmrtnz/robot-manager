@@ -7,6 +7,7 @@ import {
   Card,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   Paper,
   Popper,
@@ -14,6 +15,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
+const TASK_TYPES = ['clean', 'resupply', 'dance'];
 
 const RobotDetailsToolbar = (props) => {
   const { bot, onAssign } = props;
@@ -38,7 +40,7 @@ const RobotDetailsToolbar = (props) => {
 
       <ClickAwayListener onClickAway={handleClickAway}>
         <Button
-          disabled={bot.task}
+          disabled={Boolean(bot.task)}
           onClick={handleClickShowPopper}
           size="small"
           startIcon={<AddIcon/>}
@@ -51,15 +53,18 @@ const RobotDetailsToolbar = (props) => {
         <Popper id={id} open={open} anchorEl={anchorEl}>
           <Paper>
             <List>
-              <ListItem onClick={() => onAssign('clean')}>
-                <ListItemText>Clean</ListItemText>
-              </ListItem>
-              <ListItem onClick={() => onAssign('resupply')}>
-                <ListItemText>Resupply</ListItemText>
-              </ListItem>
-              <ListItem onClick={() => onAssign('dance')}>
-                <ListItemText>Dance</ListItemText>
-              </ListItem>
+              {TASK_TYPES.map(type => (
+                <ListItemButton
+                  key={`task_list_item_${type}`}
+                  onClick={() => onAssign(type)}
+                >
+                  <ListItem>
+                    <ListItemText>
+                      {type[0].toUpperCase() + type.slice(1)}
+                    </ListItemText>
+                  </ListItem>
+                </ListItemButton>
+              ))}
             </List>
           </Paper>
         </Popper>

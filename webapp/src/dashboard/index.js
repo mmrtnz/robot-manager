@@ -11,7 +11,7 @@ import { useTheme } from '@mui/material/styles';
 import { getBots } from '../api';
 import { GlobalContext } from '../App';
 import { useEffect } from 'react';
-import RobotDetails from './RobotDetails.js';
+import RobotDetails from './RobotDetails';
 import RobotTable from './RobotTable';
 
 const errorMessage = 'Error loading robots. Please try again later';
@@ -21,9 +21,11 @@ const Dashboard = () => {
   const [currentBot, setCurrentBot] = useState(null);
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { globalStore: { user } } = useContext(GlobalContext);
+  const { globalStore: { user, socket } } = useContext(GlobalContext);
   const theme = useTheme();
 
+  console.log('socket', socket);
+  
   useEffect(() => {
     if (!user) {
       return;

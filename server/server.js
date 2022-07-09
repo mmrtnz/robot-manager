@@ -36,6 +36,19 @@ const init = async () => {
     }
   });
 
+  const io = require('socket.io')(server.listener, {
+    cors: {
+      origin: 'http://localhost:3000',
+      methods: ['GET', 'POST']
+    }
+  });
+  io.on('connection', socket => {
+    const { remoteAddress, remotePort } = socket.request.connection;
+    const remoteLocation = `${remoteAddress}:${remotePort}`;
+    console.log(`New socket connection from ${remoteLocation} - id ${socket.id}`);
+  });
+
+  server.app.socket = io;
   server.app.firebase = initializeApp(firebaseConfig);
   server.app.dbUrl = 'https://robot-manager-c6b5d-default-rtdb.firebaseio.com/';
 

@@ -61,8 +61,10 @@ const RobotTable = (props) => {
     <TableContainer component={Paper} {...other}>
       <Table>
         <TableHead>
-          <TableCell>Robot</TableCell>
-          <TableCell>Current Task</TableCell>
+          <TableRow>
+            <TableCell>Robot</TableCell>
+            <TableCell>Current Task</TableCell>
+          </TableRow>
         </TableHead>
         <TableBody>
           {Object.keys(bots).map((botId) => {
@@ -71,6 +73,7 @@ const RobotTable = (props) => {
             return (
               <TableRow
                 hover
+                key={botId}
                 onClick={() => onSelect(bots[botId])}
                 selected={currentSelection?.name === name}
               >

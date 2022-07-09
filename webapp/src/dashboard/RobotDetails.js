@@ -1,5 +1,5 @@
 // External Dependencies
-import { useState } from 'react';
+import { useContext } from 'react';
 import {
   Card,
   Typography
@@ -7,13 +7,15 @@ import {
 
 // InternalDependencies
 import RobotDetailsToolbar from './RobotDetailsToolbar';
+import { postTask } from '../api';
+import { GlobalContext } from '../App';
 
 const RobotDetails = (props) => {
   const { bot } = props;
+  const { globalStore } = useContext(GlobalContext);
 
-  const handleAssignTask = (type) => {
-    console.log('type', type);
-    
+  const handleAssignTask = (task) => {
+    postTask(globalStore.user, bot, task);
   }
 
   return (

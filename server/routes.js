@@ -17,11 +17,19 @@ exports.plugin = {
       method: 'POST',
       path: '/session/logout',
       handler: logout,
+      options: {
+        auth: false
+      },
     });
     server.route({
       method: 'GET',
       path: '/bots',
       config: require('./controllers/bots'),
+    });
+    server.route({
+      method: 'POST',
+      path: '/tasks',
+      config: require('./controllers/tasks'),
     });
   }
 }

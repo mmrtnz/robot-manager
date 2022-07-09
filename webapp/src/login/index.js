@@ -2,6 +2,7 @@
 import { useContext, useState } from 'react';
 import { Button, styled, TextField, Typography } from '@mui/material';
 import { Container } from '@mui/system';
+import { io } from 'socket.io-client';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -91,10 +92,16 @@ const Login = props => {
 
 		postLogin(form)
 			.then(res => {
-				// Persist login
+				// Persist login credentials
 				Cookies.set('user', JSON.stringify(res), { expires: 1 });
 
-				setGlobalStore({...globalStore, user: res })
+				// Connect to socket events
+				const socket = io('http://localhost:8080');
+
+				// Update state
+				setGlobalStore({...globalStore, user: res, socket })
+
+				// Continue through UI
 				navigate('/dashboard', { replace: true });
 			})
 			.catch(err => {

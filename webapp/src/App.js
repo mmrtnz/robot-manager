@@ -1,5 +1,6 @@
 // External Dependencies
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import React, { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
 
@@ -8,7 +9,7 @@ import AppBar from './AppBar';
 import Login from './login';
 import Dashboard from './dashboard';
 
-const defaultContext = { user: null };
+const defaultContext = { user: null, socket: null };
 
 export const GlobalContext = React.createContext(defaultContext);
 
@@ -22,13 +23,15 @@ const Layout = () => (
 const App = () => {
   const [globalStore, setGlobalStore] = useState(defaultContext);
 
-  // Restore current user data from cookie and redirect into or out of app 
-  // depending on whether previous session is still valid. 
+  // Restore current user data and socket connection. Redirect based on session 
+  // status.
   useEffect(() => {
-    const user = Cookies.get('user');
+    const user = JSON.parse(Cookies.get('user'));
     
     if (user) {
-      setGlobalStore({...globalStore, user: JSON.parse(user) });
+      const socket = io('http://localhost:8080');
+
+      setGlobalStore({ ...globalStore, user, socket });
       
       if (document.location.pathname === '/') {
         window.location.pathname = '/dashboard';
