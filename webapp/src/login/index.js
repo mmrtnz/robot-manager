@@ -82,8 +82,11 @@ const Login = props => {
 			submitError: null
 		})
 	};
-
+	console.log('test');
+	
 	const handleSubmit = () => {
+		console.log('submitting');
+		
 		const [updatedForm, hasError] = validateForm(form);
 		if (hasError) {
 			setForm(updatedForm);
@@ -92,6 +95,8 @@ const Login = props => {
 
 		postLogin(form)
 			.then(res => {
+				console.log('res', res);
+				
 				// Persist login credentials
 				Cookies.set('user', JSON.stringify(res), { expires: 1 });
 
@@ -105,6 +110,7 @@ const Login = props => {
 				navigate('/dashboard', { replace: true });
 			})
 			.catch(err => {
+				console.log('Error logging in', err);
 				setForm({...form, submitError: 'Invalid login'})
 			});
 	};

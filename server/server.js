@@ -27,7 +27,7 @@ const init = async () => {
     routes: {
       cors: {
         origin: ['*'],
-        headers: ['Authorization'], // an array of strings - 'Access-Control-Allow-Headers'
+        headers: ['Access-Control-Allow-Origin', 'Authorization'], // an array of strings - 'Access-Control-Allow-Headers'
         exposedHeaders: ['Accept'], // an array of exposed headers - 'Access-Control-Expose-Headers',
         additionalExposedHeaders: ['Accept'], // an array of additional exposed headers
         maxAge: 60,

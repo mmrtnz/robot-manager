@@ -1,5 +1,5 @@
 // Internal Dependencies
-const { createTask } = require('../services/tasks');
+const { createTask, getTasksForBot } = require('../services/tasks');
 const { stopBot } = require('../services/bots');
 
 const startTask = async (request, h) => {
@@ -8,6 +8,10 @@ const startTask = async (request, h) => {
   const { firebase, socket } = request.server.app;
 
   const updatedBotData = await createTask(firebase, JSON.parse(request.payload));
+
+  if (!updatedBotData) {
+    return h.response().code(500);
+  }
 
   socket.emit('task_created', updatedBotData);
 
@@ -20,6 +24,10 @@ const stopTask = async (request, h) => {
 
   const updatedBotData = await stopBot(firebase, JSON.parse(request.payload));
 
+  if (!updatedBotData) {
+    return h.response().code(500);
+  }
+
   socket.emit('task_stopped', updatedBotData);
 
   return h.response().code(200);
@@ -27,5 +35,5 @@ const stopTask = async (request, h) => {
 
 module.exports = {
   startTask,
-  stopTask,
+  stopTask
 };

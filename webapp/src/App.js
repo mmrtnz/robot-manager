@@ -26,9 +26,11 @@ const App = () => {
   // Restore current user data and socket connection. Redirect based on session 
   // status.
   useEffect(() => {
-    const user = JSON.parse(Cookies.get('user'));
+
+    const userCookie = Cookies.get('user');
     
-    if (user) {
+    if (userCookie) {
+      const user = JSON.parse(userCookie);
       const socket = io('http://localhost:8080');
 
       setGlobalStore({ ...globalStore, user, socket });

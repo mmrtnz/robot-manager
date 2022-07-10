@@ -58,6 +58,26 @@ export const getBots = (user) => {
   .catch(() => {});
 };
 
+export const getTasksForBot = (user, botId) => {
+  const url = new URL('bot/history', BASE_URL);
+  url.searchParams.append('botId', botId);
+
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      ...getAuthHeaders(user),
+    },
+  })
+  .then(res => {
+    if (!res.ok) {
+      throw new Error('Unknown error');
+    }
+    return res.json()
+  })
+  .catch((err) => { console.log(err); });
+
+};
+
 export const postTask = (user, bot, task) => {
   const url = new URL('tasks', BASE_URL);
 

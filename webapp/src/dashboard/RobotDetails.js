@@ -7,6 +7,7 @@ import {
 
 // InternalDependencies
 import RobotDetailsToolbar from './RobotDetailsToolbar';
+import RobotTaskHistory from './RobotTaskHistory';
 import { postTask, stopTask } from '../api';
 import { GlobalContext } from '../App';
 
@@ -30,6 +31,7 @@ const RobotDetails = (props) => {
         onUnassign={handleUnassignTask}
       />
       <Typography variant="subtitle1">History</Typography>
+      <RobotTaskHistory bot={bot}/>
     </Card>
   );
 };

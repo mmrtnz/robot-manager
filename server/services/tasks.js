@@ -1,46 +1,72 @@
 // External Dependencies
-const { getDatabase, ref, get, query, orderByChild, equalTo, set } = require('firebase/database');
+const {
+  set,
+  ref,
+  query,
+  orderByChild,
+  getDatabase,
+  get,
+  equalTo,
+} = require('firebase/database');
 const guid = require('guid');
 
 // Internal Dependencies
 
 
-const createTask = async (firebase, taskData) => {
+const createTask = async (firebase, reqPayload) => {
+  const id = guid.create().value;
   const db = getDatabase(firebase);
-  const dbRefTask = ref(db, '/tasks/' + guid.create());
-  const dbRefBot = ref(db, '/bots/' + taskData.bot.id);
+  const dbRefTask = ref(db, '/tasks/' + id);
+  const dbRefBot = ref(db, '/bots/' + reqPayload.bot.id);
 
   const dbPayloadTask = {
+    id,
     date: new Date().toISOString(),
-    user: {
-      id: taskData.user.id,
-      name: taskData.user.name,
-    },
-    bot: {
-      id: taskData.bot.id,
-      name: taskData.bot.name,
-    },
-    type: taskData.task
+    userId: reqPayload.user.id,
+    userName: reqPayload.user.name,
+    botId: reqPayload.bot.id,
+    botName: reqPayload.bot.name,
+    type: reqPayload.task
   };
 
   const dbPayloadBot = {
-    ...taskData.bot,
-    task: taskData.task,
+    ...reqPayload.bot,
+    task: reqPayload.task,
     status: 'busy'
   };
 
-  await Promise.all([
-    set(dbRefTask, dbPayloadTask),
-    set(dbRefBot, dbPayloadBot)
-  ])
+  try {
+    await Promise.all([
+      set(dbRefTask, dbPayloadTask),
+      set(dbRefBot, dbPayloadBot)
+    ])
+  } catch (err) {
+    console.log('err', err);
+    return null;
+  }
 
-  // Return the latest bots data for sock so that it can get reflected in the
+  // Return the latest bots data for socket so that it can get reflected in the
   // app without an extra API call.
   return dbPayloadBot;
 };
 
-const getTasksForBot = () => {
+const getTasksForBot = async (firebase, botId) => {
+  const db = getDatabase(firebase);
+  const dbRef = ref(db, '/tasks');
+  const q = query(dbRef, orderByChild('botId'), equalTo(botId));
 
+  const snapshot = await get(q);
+  const dbTasks = snapshot.val();
+
+  if (!dbTasks) {
+    return [];
+  }
+
+  const taskList = Object.values(dbTasks);
+
+  taskList.sort((a, b) => new Date(a.date) > new Date(b.date));
+
+  return taskList;
 };
 
 module.exports = {

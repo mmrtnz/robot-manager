@@ -1,5 +1,6 @@
 'use strict'
 
+const { getAll, getBotHistory } = require('./controllers/bots');
 const { login, logout } = require('./controllers/session');
 const { startTask, stopTask } = require('./controllers/tasks');
 
@@ -25,7 +26,14 @@ exports.plugin = {
     server.route({
       method: 'GET',
       path: '/bots',
-      config: require('./controllers/bots'),
+      handler: getAll,
+    });
+    server.route({
+      method: 'GET',
+      // Ideal path would be /bot/{id}/tasks but routes with params are throwing
+      // a cors error
+      path: '/bot/history',
+      handler: getBotHistory,
     });
     server.route({
       method: 'POST',
