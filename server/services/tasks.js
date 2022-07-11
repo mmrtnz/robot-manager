@@ -81,19 +81,19 @@ const updateTaskProgress = async (firebase, task, newProgress) => {
   const dbPayloadBotComplete = {
     id: task.botId,
     name: task.botName,
-    status: 'idle',
-    task: '',
-    progress: 0,
+    status: isComplete ? 'idle' : 'busy',
+    task: isComplete ? '' : task.type,
+    progress: isComplete ? 0 : newProgress,
   };
 
   // TODO: Add spontaneous errors
 
   await set(dbRefTask, dbPayloadTask);
+  await set(dbRefBot, dbPayloadBotComplete);
 
   // When complete also update duplicate task data in bot
   if (isComplete) {
     console.log('Successful completion')
-    await set(dbRefBot, dbPayloadBotComplete);
   }
 };
 

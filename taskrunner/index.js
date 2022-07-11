@@ -49,8 +49,6 @@ const getChunkOfTasks = async db => {
   if (!dbTasks) {
     return null;
   }
-
-  console.log(Object.values(dbTasks));
   
   return Object.values(dbTasks).filter(({ progress, status }) => {
     return (progress || 0) < 100 && (status || '') !== 'error'
@@ -183,6 +181,7 @@ const start = async () => {
         await timeout(async () => {
           if (cancelCurrentTask) {
             p = 100;
+            cancelCurrentTask = false;
           } else {
             await stepFunc(currentTask, p);
           }
@@ -192,8 +191,6 @@ const start = async () => {
 
       // Next chunk
       taskList = await getChunkOfTasks(db);
-      console.log('next taskList', taskList);
-      
       len = taskList.length;
     }
   }

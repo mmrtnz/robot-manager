@@ -123,7 +123,6 @@ const Dashboard = () => {
       setBots({ all: bots.all, current: newBot });
     }
   };
-console.log('bots.current', bots.current);
 
   return (
     <Container className={css`animation: ${fadeIn} .75s ease 1;`}>
