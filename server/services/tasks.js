@@ -102,7 +102,7 @@ const updateTaskProgress = async (firebase, task, newProgress) => {
   const dbRefBot = ref(db, '/bots/' + task.botId);
   
   const isComplete = newProgress >= 100;
-  const isError = Math.random() < .1;
+  const isError = Math.random() < .05;
 
   const dbPayloadTask = {
     ...task,

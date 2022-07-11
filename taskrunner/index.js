@@ -77,6 +77,19 @@ const resetAllTasks = async db => {
   console.log(`Resetted ${Object.keys(newTasks).length} tasks`);
 }
 
+// Debugging purposes only
+const deleteAllTasks = async db => {
+  const dbRef = ref(db, '/tasks');
+  const q = query(dbRef);
+  const snapshot = await get(q);
+  const dbTasks = snapshot.val();
+  const taskList = Object.keys(dbTasks)
+  
+  set(dbRef, {});
+
+  console.log(`Deleted ${taskList.length} tasks`);
+}
+
 const resetAllBots = async db => {
   const dbRef = ref(db, '/bots');
   const q = query(dbRef);
@@ -122,6 +135,13 @@ const start = async () => {
     await resetAllBots(db);
     process.exit(0);
   }
+
+  if (process.argv.length === 3 && process.argv[2] === 'delete') {
+    await deleteAllTasks(db);
+    await resetAllBots(db);
+    process.exit(0);
+  }
+
 
   // State variables
 

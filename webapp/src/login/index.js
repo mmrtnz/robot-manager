@@ -24,9 +24,9 @@ const AppTitle = styled(Typography)(`
 `);
 
 const defaultForm = {
-	username: 'user1',
+	username: '',
 	usernameError: null,
-	password: 'user1',
+	password: '',
 	passwordError: null,
 	submitError: null
 };

@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "reset": "node index.js reset",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "reset-tasks": "node index.js reset",
+    "delete-tasks": "node index.js delete"
   },
   "author": "mmrtnz",
   "license": "ISC",

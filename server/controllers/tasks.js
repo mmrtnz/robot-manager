@@ -77,6 +77,7 @@ const updateTask = async (request, h) => {
     socket.emit('task_progress_error', updatedBotData);
     return h.response('error').code(200);
   } else if (progress >= 100) {
+    socket.emit('task_progress_update', task, progress);
     socket.emit('task_progress_complete', updatedBotData);
   } else {
     socket.emit('task_progress_update', task, progress);
