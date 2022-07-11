@@ -1,20 +1,22 @@
 // External Dependencies
 import { useState } from 'react';
 import {
-  ClickAwayListener,
   Box,
   Button,
-  Card,
+  ClickAwayListener,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
   Paper,
   Popper,
-  Typography
+  Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
+
+// Internal Dependencies
+import DialogConfirmTaskOverride from './DialogConfirmTaskOverride';
 
 const TASK_TYPES = ['clean', 'resupply', 'dance'];
 
@@ -63,24 +65,24 @@ const RobotDetailsToolbar = (props) => {
         Stop Task
       </Button>
       </Box>
-        <Popper id={id} open={open} anchorEl={anchorEl}>
-          <Paper>
-            <List>
-              {TASK_TYPES.map(type => (
-                <ListItemButton
-                  key={`task_list_item_${type}`}
-                  onClick={() => onAssign(type)}
-                >
-                  <ListItem>
-                    <ListItemText>
-                      {type[0].toUpperCase() + type.slice(1)}
-                    </ListItemText>
-                  </ListItem>
-                </ListItemButton>
-              ))}
-            </List>
-          </Paper>
-        </Popper>
+      <Popper id={id} open={open} anchorEl={anchorEl}>
+        <Paper>
+          <List>
+            {TASK_TYPES.map(type => (
+              <ListItemButton
+                key={`task_list_item_${type}`}
+                onClick={() => onAssign(type)}
+              >
+                <ListItem>
+                  <ListItemText>
+                    {type[0].toUpperCase() + type.slice(1)}
+                  </ListItemText>
+                </ListItem>
+              </ListItemButton>
+            ))}
+          </List>
+        </Paper>
+      </Popper>
     </>
   );
 };

@@ -1,5 +1,5 @@
 // External Dependencies
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   Card,
   Typography
@@ -7,9 +7,10 @@ import {
 import { css, keyframes } from '@emotion/css';
 
 // InternalDependencies
+import DialogConfirmTaskOverride from './DialogConfirmTaskOverride';
 import RobotDetailsToolbar from './RobotDetailsToolbar';
 import RobotTaskHistory from './RobotTaskHistory';
-import { postTask, stopTask } from '../api';
+import { postTask, stopTask, getTasksForBot } from '../api';
 import { GlobalContext } from '../App';
 
 const fadeIn = keyframes`
@@ -25,6 +26,16 @@ const fadeIn = keyframes`
 const RobotDetails = (props) => {
   const { bot } = props;
   const { globalStore } = useContext(GlobalContext);
+  const [tasks, setTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  // Load bot data
+  useEffect(() => {
+    getTasksForBot(globalStore.user, bot.id)
+      .then(res => setTasks(res))
+      .finally(() => setIsLoading(false));
+  }, [bot]);
 
   const handleAssignTask = (task) => {
     postTask(globalStore.user, bot, task);
@@ -32,17 +43,32 @@ const RobotDetails = (props) => {
 
   const handleUnassignTask = () => {
     stopTask(globalStore.user, bot);
+    setOpen(false);
   };
+
+  const recentTask = tasks.length ? tasks[0] : null;
 
   return (
     <Card sx={{ p: 2 }} className={css`animation: ${fadeIn} .5s ease 1;`}>
       <RobotDetailsToolbar
         bot={bot}
         onAssign={handleAssignTask}
-        onUnassign={handleUnassignTask}
+        onUnassign={() => setOpen(true)}
       />
       <Typography variant="subtitle1">History</Typography>
-      <RobotTaskHistory bot={bot}/>
+      <RobotTaskHistory
+        bot={bot}
+        isLoading={isLoading}
+        tasks={tasks}
+      />
+      <DialogConfirmTaskOverride
+        open={open}
+        onConfirm={handleUnassignTask}
+        onClose={() => setOpen(false)}
+        botName={recentTask?.botName || ''}
+        recentAssignee={recentTask?.userName || ''}
+        recentTaskType={recentTask?.type || ''}
+      />
     </Card>
   );
 };

@@ -56,7 +56,7 @@ const RobotTable = (props) => {
     onSelect,
     ...other
   } = props;
-
+  
   return (
     <TableContainer component={Paper} {...other}>
       <Table>
@@ -69,13 +69,14 @@ const RobotTable = (props) => {
         <TableBody>
           {Object.keys(bots).map((botId) => {
             const { name, status, task } = bots[botId];
+            
             const { IconComponent } = getStylesConfig(botId);          
             return (
               <TableRow
                 hover
                 key={botId}
                 onClick={() => onSelect(bots[botId])}
-                selected={currentSelection?.name === name}
+                selected={currentSelection === name}
               >
                 <TableCell>
                   <Box sx={{ display: 'flex' }}>

@@ -87,6 +87,8 @@ export const postTask = (user, bot, task) => {
     body: JSON.stringify({ task, bot, user })
   })
   .then(res => {
+    console.log('res', res);
+    
     return res.json()
   })
   .catch(() => {});

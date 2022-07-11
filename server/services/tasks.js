@@ -41,7 +41,7 @@ const createTask = async (firebase, reqPayload) => {
       set(dbRefBot, dbPayloadBot)
     ])
   } catch (err) {
-    console.log('err', err);
+    console.log('Error adding task and updating bot', err);
     return null;
   }
 
@@ -50,7 +50,7 @@ const createTask = async (firebase, reqPayload) => {
   return dbPayloadBot;
 };
 
-const getTasksForBot = async (firebase, botId) => {
+const getTasksForBot = async (firebase, botId, limit = null) => {
   const db = getDatabase(firebase);
   const dbRef = ref(db, '/tasks');
   const q = query(dbRef, orderByChild('botId'), equalTo(botId));
@@ -64,9 +64,10 @@ const getTasksForBot = async (firebase, botId) => {
 
   const taskList = Object.values(dbTasks);
 
-  taskList.sort((a, b) => new Date(a.date) > new Date(b.date));
+  // Sorts tasks in descending order (newest to oldest) 
+  taskList.sort((a, b) => new Date(a.date) < new Date(b.date));
 
-  return taskList;
+  return taskList.slice(0, limit || taskList.length);
 };
 
 module.exports = {

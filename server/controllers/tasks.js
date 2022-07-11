@@ -7,8 +7,30 @@ const startTask = async (request, h) => {
 
   const { firebase, socket } = request.server.app;
 
-  const updatedBotData = await createTask(firebase, JSON.parse(request.payload));
+  const payloadJSON = JSON.parse(request.payload);
 
+  /**
+   * This isn't needed because all clients are subscribed to the task_created
+   * socket event and will update immediately. Two users would need to assign a
+   * task almost simultaneously which isn't likely to happen on a demo scale.
+   * For production it'd be nice to add tasks to a queue before they get
+   * assigned to bots.
+   */
+  // const latestTask = await getTasksForBot(firebase, payloadJSON.bot.id , 1);
+
+  // We give the user 5 seconds to override the most recently assigned task
+  // const timeToLockLatestTask = new Date();
+  // timeToLockLatestTask.setSeconds(timeToLockLatestTask.getSeconds() + 5);
+
+  // const timeOfLatestTask = new Date(latestTask[0].time);
+
+  // if (latestTask.length && timeToLockLatestTask > timeOfLatestTask) {
+  //   return h.response('required override').code(200);
+  // }
+
+  const updatedBotData = await createTask(firebase, payloadJSON);
+
+  // Catch unexpected problem from task creation
   if (!updatedBotData) {
     return h.response().code(500);
   }

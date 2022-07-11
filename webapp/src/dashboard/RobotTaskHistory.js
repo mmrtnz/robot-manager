@@ -1,5 +1,4 @@
 // External Dependencies
-import { useContext, useEffect, useState } from 'react';
 import {
   Box,
   Paper,
@@ -13,21 +12,13 @@ import {
   CircularProgress,
 } from '@mui/material';
 
-// Internal Dependencies
-import { GlobalContext } from '../App';
-import { getTasksForBot } from '../api';
-
 const RobotTaskHistory = (props) => {
-  const { bot, ...other } = props;
-  const { globalStore } = useContext(GlobalContext);
-  const [tasks, setTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    getTasksForBot(globalStore.user, bot.id)
-      .then(res => setTasks(res))
-      .finally(() => setIsLoading(false));
-  }, [bot]);
+  const {
+    bot,
+    isLoading,
+    tasks,
+    ...other
+  } = props;
 
   if (isLoading) {
     return (
