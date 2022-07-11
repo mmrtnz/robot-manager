@@ -39,9 +39,9 @@ const RobotDetailsToolbar = (props) => {
       <Box sx={{ display: 'flex', flexDirection: 'row', mb: 4 }}>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h6">{bot?.name}</Typography>
-          <Typography variant="subtitle1">
+          {/* <Typography variant="subtitle1">
             Current Task: {bot?.task || 'none'} {prettyProgress}
-          </Typography>
+          </Typography> */}
         </Box>
 
       <ClickAwayListener onClickAway={handleClickAway}>

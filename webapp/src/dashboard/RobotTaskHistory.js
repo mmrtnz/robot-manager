@@ -46,14 +46,16 @@ const RobotTaskHistory = (props) => {
           <TableHead>
             <TableRow>
               <TableCell>Task</TableCell>
+              <TableCell>Status</TableCell>
               <TableCell>Assigned By</TableCell>
               <TableCell>Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {tasks.map(({ date, type, userName}, idx) => (
+            {tasks.map(({ date, type, userName, status }, idx) => (
               <TableRow key={`task-row-${idx}`}>
                 <TableCell>{type}</TableCell>
+                <TableCell>{status}</TableCell>
                 <TableCell>{userName}</TableCell>
                 <TableCell>{new Date(date).toLocaleString()}</TableCell>
               </TableRow>

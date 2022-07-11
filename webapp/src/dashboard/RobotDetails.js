@@ -30,6 +30,8 @@ const RobotDetails = (props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const recentTask = tasks.length ? tasks[0] : null;
+
   // Load bot data
   useEffect(() => {
     getTasksForBot(globalStore.user, bot.id)
@@ -42,11 +44,10 @@ const RobotDetails = (props) => {
   }
 
   const handleUnassignTask = () => {
-    stopTask(globalStore.user, bot);
+    stopTask(globalStore.user, bot, recentTask);
     setOpen(false);
   };
 
-  const recentTask = tasks.length ? tasks[0] : null;
 
   return (
     <Card sx={{ p: 2 }} className={css`animation: ${fadeIn} .5s ease 1;`}>

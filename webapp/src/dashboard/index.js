@@ -35,7 +35,7 @@ const Dashboard = () => {
   const { globalStore: { user, socket } } = useContext(GlobalContext);
   const theme = useTheme();
 
-  // Updates state with latest changes to bot when its task updates 
+  // Updates state with latest changes to bot when it's task updates 
   const refresh = updatedBot => {
     setBots({ ...bots, [updatedBot.id]: updatedBot });
     if (currentBot?.id === updatedBot.id) {
@@ -44,10 +44,6 @@ const Dashboard = () => {
   };
 
   const updateTaskProgress = (task, newProgress) => {
-    console.log('task', task);
-    
-    // console.log(`${task.id} progress ${newProgress}`);
-
     const updatedBot = {
       ...bots[task.botId],
       progress: newProgress,
@@ -59,9 +55,12 @@ const Dashboard = () => {
       [task.botId]: updatedBot
     });
 
-    if (task.botId === currentBot?.id) {
-      setCurrentBot(updatedBot);
-    }
+    console.log('task.botId', task.botId);
+    console.log('currentBot?.id', currentBot?.id);
+    
+    // if (task.botId === currentBot?.id) {
+    //   setCurrentBot(updatedBot);
+    // }
   };
 
   useEffect(() => {
@@ -69,9 +68,11 @@ const Dashboard = () => {
       return;
     }
 
-    socket.on('task_created', refresh);
-    socket.on('task_stopped', refresh);
-    socket.on('task_progress_update', updateTaskProgress);
+    socket.on('task_created', updatedBot => refresh(updatedBot));
+    socket.on('task_stopped', updatedBot => refresh(updatedBot));
+    socket.on('task_progress_update', (task, newProgress) => {
+      updateTaskProgress(task, newProgress);
+    });
   }, [socket, bots, currentBot]);
   
   useEffect(() => {
@@ -114,6 +115,7 @@ const Dashboard = () => {
       setCurrentBot(newBot);
     }
   };
+console.log('currentBot', currentBot);
 
   return (
     <Container className={css`animation: ${fadeIn} .75s ease 1;`}>

@@ -1,5 +1,5 @@
 // Internal Dependencies
-const { createTask, updateTaskProgress } = require('../services/tasks');
+const { createTask, updateTaskProgress, updateTaskStatus } = require('../services/tasks');
 const { stopBot } = require('../services/bots');
 
 const startTask = async (request, h) => {
@@ -43,8 +43,11 @@ const startTask = async (request, h) => {
 const stopTask = async (request, h) => {
   console.log('POST /tasks/stop');
   const { firebase, socket } = request.server.app;
+  const payloadJSON = JSON.parse(request.payload);
 
-  const updatedBotData = await stopBot(firebase, JSON.parse(request.payload));
+  const updatedBotData = await stopBot(firebase, payloadJSON.bot);
+
+  await updateTaskStatus(firebase, payloadJSON.task, 'cancel');
 
   if (!updatedBotData) {
     return h.response().code(500);

@@ -18,12 +18,12 @@ const getAllBots = async (firebase) => {
   }
 }
 
-const stopBot = async (firebase, taskData) => {
+const stopBot = async (firebase, bot) => {
   const db = getDatabase(firebase);
-  const dbRefBot = ref(db, '/bots/' + taskData.bot.id);
+  const dbRefBot = ref(db, '/bots/' + bot.id);
 
   const dbPayloadBot = {
-    ...taskData.bot,
+    ...bot,
     task: '',
     status: 'idle'
   };

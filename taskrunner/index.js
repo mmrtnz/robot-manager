@@ -3,6 +3,7 @@
 // External Dependencies
 const dotenv = require('dotenv');
 const axios = require('axios');
+const { io } = require('socket.io-client');
 const { initializeApp } = require("firebase/app");
 const {
   get,
@@ -26,12 +27,12 @@ const firebaseConfig = {
   measurementId: "G-5TFDD7T29D"
 };
 
-const timeout = async activity => {
+const timeout = async (activity, timeout = 1000) => {
   await new Promise((resolve, reject) => {
     setTimeout(async () => {
       await activity();
       resolve();
-    }, 1000);
+    }, timeout);
   })
 }
 
@@ -45,7 +46,15 @@ const getChunkOfTasks = async db => {
   const snapshot = await get(q);
   const dbTasks = snapshot.val();
 
-  return dbTasks;
+  if (!dbTasks) {
+    return null;
+  }
+
+  console.log(Object.values(dbTasks));
+  
+  return Object.values(dbTasks).filter(({ progress, status }) => {
+    return (progress || 0) < 100 && (status || '') !== 'error'
+  });
 }
 
 // Debugging purposes only
@@ -106,6 +115,7 @@ const start = async () => {
 
   // Connect to other services
   const firebase = initializeApp(firebaseConfig);
+  const socket = io('http://localhost:8080');
   const db = getDatabase(firebase);
 
   if (process.argv.length === 3 && process.argv[2] === 'reset') {
@@ -114,46 +124,79 @@ const start = async () => {
     process.exit(0);
   }
 
-  // Poll for tasks
-  let dbTasks = await getChunkOfTasks(db);
+  // State variables
 
-  if (!dbTasks) {
+  // Time to wait after all tasks have been processed before polling again
+  let waitTime = 2; 
+  // Current tasks that were polled
+  let taskList;
+  // Length of taskList
+  let len;
+  // Flags when a user cancels a job in progress
+  let cancelCurrentTask = false;
+  // Current task being progressed
+  let currentTask = null;
+
+  socket.on('task_stopped', (updatedBotData) => {
+    cancelCurrentTask = currentTask && currentTask.botId === updatedBotData.id;
+    if (cancelCurrentTask) {
+      console.log('Task cancelled by user');
+    }
+  });
+
+  // Poll for tasks
+  taskList = await getChunkOfTasks(db);
+  len = taskList.length;
+
+  if (!taskList) {
     console.log('No tasks found');
     return;
   }
 
   // Process tasks
-  let taskList = Object.values(dbTasks);
-  let len = taskList.length;
-  
-  do {
+  while (true) {
+    // Wait when all tasks have been processed
+    if (len === 0) {
+      console.log(`All tasks have been processed waiting ${waitTime} seconds`);
+      waitTime = Math.min(10, waitTime + 1);
+      await timeout(() => {}, waitTime * 1000);
+
+      // Next chunk
+      taskList = await getChunkOfTasks(db);
+      len = taskList.length;
+      continue;
+    }
+    waitTime = 2;
+
     console.log(`Retreived ${len} task${len > 1 ? 's' : ''}`);
     
     // Using stdout to log on same line. forEach runs items in pseudo-parallel
     // so we fall back to for-loop 
     const step = 10;
     for (let i = 0; i < taskList.length; i++) {
-      const currentTask = taskList[i];
+      currentTask = taskList[i];
       const startingProgress = currentTask?.progress || 0; 
       process.stdout.write('Starting task ' + currentTask.id);
   
       for (let p = startingProgress; p <= 100; p += step) {
         process.stdout.write('.');
         await timeout(async () => {
-          await stepFunc(currentTask, p);
-        });
+          if (cancelCurrentTask) {
+            p = 100;
+          } else {
+            await stepFunc(currentTask, p);
+          }
+        }, 500);
       }
       process.stdout.write('\n');
 
       // Next chunk
-      dbTasks = await getChunkOfTasks(db);
-      taskList = Object.values(dbTasks);
+      taskList = await getChunkOfTasks(db);
+      console.log('next taskList', taskList);
+      
       len = taskList.length;
     }
-  } while (len > 0);
-
-  console.log('All tasks have been processed');
-  process.exit(0);
+  }
 };
 
 start();

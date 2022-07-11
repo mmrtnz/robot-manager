@@ -26,11 +26,14 @@ const createTask = async (firebase, reqPayload) => {
     userName: reqPayload.user.name,
     botId: reqPayload.bot.id,
     botName: reqPayload.bot.name,
-    type: reqPayload.task
+    type: reqPayload.task,
+    progress: 0,
+    status: 'created'
   };
 
   const dbPayloadBot = {
     ...reqPayload.bot,
+    progress: 0,
     task: reqPayload.task,
     status: 'busy'
   };
@@ -49,6 +52,18 @@ const createTask = async (firebase, reqPayload) => {
   // app without an extra API call.
   return dbPayloadBot;
 };
+
+const updateTaskStatus = async (firebase, task, newStatus) => {
+  const db = getDatabase(firebase);
+  const dbRefTask = ref(db, '/tasks/' + task.id);
+
+  const dbPayloadTask = {
+    ...task,
+    status: newStatus
+  };
+
+  await set(dbRefTask, dbPayloadTask);
+}
 
 const updateTaskProgress = async (firebase, task, newProgress) => {
   const db = getDatabase(firebase);
@@ -111,5 +126,6 @@ const getTasksForBot = async (firebase, botId, limit = null) => {
 module.exports = {
   createTask,
   getTasksForBot,
-  updateTaskProgress
+  updateTaskProgress,
+  updateTaskStatus
 };
