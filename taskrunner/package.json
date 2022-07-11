@@ -1,0 +1,18 @@
+{
+  "name": "taskrunner",
+  "version": "1.0.0",
+  "description": "Simulates robot tasks",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mmrtnz",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "firebase": "^9.9.0",
+    "nodemon": "^2.0.19",
+    "socket.io-client": "^4.5.1"
+  }
+}
