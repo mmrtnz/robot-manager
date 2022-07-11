@@ -83,9 +83,16 @@ const deleteAllTasks = async db => {
   const q = query(dbRef);
   const snapshot = await get(q);
   const dbTasks = snapshot.val();
+
+  if (!dbTasks) {
+    console.log('No tasks found');
+    return;
+  }
+
+
   const taskList = Object.keys(dbTasks)
-  
   set(dbRef, {});
+
 
   console.log(`Deleted ${taskList.length} tasks`);
 }
@@ -165,11 +172,10 @@ const start = async () => {
 
   // Poll for tasks
   taskList = await getChunkOfTasks(db);
-  len = taskList.length;
+  len = taskList ? taskList.length : 0;
 
   if (!taskList) {
     console.log('No tasks found');
-    return;
   }
 
   // Process tasks
@@ -177,15 +183,15 @@ const start = async () => {
     // Wait when all tasks have been processed
     if (len === 0) {
       console.log(`All tasks have been processed waiting ${waitTime} seconds`);
-      waitTime = Math.min(5, waitTime + 1);
+      waitTime = Math.min(3, waitTime + 1);
       await timeout(() => {}, waitTime * 1000);
 
       // Next chunk
       taskList = await getChunkOfTasks(db);
-      len = taskList.length;
+      len = taskList ? taskList.length : 0;
       continue;
     }
-    waitTime = 2;
+    waitTime = 1;
 
     console.log(`Retreived ${len} task${len > 1 ? 's' : ''}`);
     
@@ -217,7 +223,7 @@ const start = async () => {
 
       // Next chunk
       taskList = await getChunkOfTasks(db);
-      len = taskList.length;
+      len = taskList ? taskList.length : 0;
     }
   }
 };
