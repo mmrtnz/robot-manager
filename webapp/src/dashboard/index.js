@@ -4,6 +4,7 @@ import {
   Container,
   Typography,
 } from '@mui/material';
+import { css, keyframes } from '@emotion/css';
 import React, { useContext, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 
@@ -15,6 +16,16 @@ import RobotDetails from './RobotDetails';
 import RobotTable from './RobotTable';
 
 const errorMessage = 'Error loading robots. Please try again later';
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(32px); 
+  }
+  to {
+    opacity: 1;
+  }
+`;
 
 const Dashboard = () => {
   const [bots, setBots] = useState({});
@@ -77,15 +88,13 @@ const Dashboard = () => {
   }
 
   const handleSelect = newBot => {
-    if (newBot.name === currentBot?.name) {
-      setCurrentBot(null);
-    } else {
+    if (newBot.name !== currentBot?.name) {
       setCurrentBot(newBot);
     }
   };
 
   return (
-    <Container>
+    <Container className={css`animation: ${fadeIn} .75s ease 1;`}>
       <RobotTable
         bots={bots}
         currentSelection={currentBot?.name}

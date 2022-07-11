@@ -37,6 +37,16 @@ const RobotTaskHistory = (props) => {
       </>
     );
   }
+
+  if (!tasks.length) {
+    return (
+      <Paper variant='outlined' sx={{ p: 3, ...other?.sx }} {...other}>
+        <Typography variant='subtitle1'>
+          No tasks have been assigned to {bot.name}
+        </Typography>
+      </Paper>
+    );
+  }
   
   return (
     <Paper variant='outlined' {...other}>
@@ -44,17 +54,17 @@ const RobotTaskHistory = (props) => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Date</TableCell>
               <TableCell>Task</TableCell>
               <TableCell>Assigned By</TableCell>
+              <TableCell>Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {tasks.map(({ date, type, userName}) => (
-              <TableRow>
-                <TableCell>{new Date(date).toLocaleString()}</TableCell>
+            {tasks.map(({ date, type, userName}, idx) => (
+              <TableRow key={`task-row-${idx}`}>
                 <TableCell>{type}</TableCell>
                 <TableCell>{userName}</TableCell>
+                <TableCell>{new Date(date).toLocaleString()}</TableCell>
               </TableRow>
             ))}
           </TableBody>
