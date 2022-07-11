@@ -43,11 +43,15 @@ const startTask = async (request, h) => {
 const stopTask = async (request, h) => {
   console.log('POST /tasks/stop');
   const { firebase, socket } = request.server.app;
-  const payloadJSON = JSON.parse(request.payload);
+  const { bot, task } = JSON.parse(request.payload);
 
-  const updatedBotData = await stopBot(firebase, payloadJSON.bot);
-
-  await updateTaskStatus(firebase, payloadJSON.task, 'cancel');
+  const updatedBotData = await stopBot(firebase, bot);
+  
+  // Keep status of errored tasks for recording purposes 
+  const hasError = task.status === 'error';
+  if (!hasError) {
+    await updateTaskStatus(firebase, task, 'cancel');
+  }
 
   if (!updatedBotData) {
     return h.response().code(500);
@@ -67,9 +71,16 @@ const updateTask = async (request, h) => {
   // payloads  
   const { task, progress } = request.payload;
 
-  await updateTaskProgress(firebase, task, progress);
-  socket.emit('task_progress_update', task, progress);
+  const [error, updatedBotData] = await updateTaskProgress(firebase, task, progress);
 
+  if (error) {
+    socket.emit('task_progress_error', updatedBotData);
+    return h.response('error').code(200);
+  } else if (progress >= 100) {
+    socket.emit('task_progress_complete', updatedBotData);
+  } else {
+    socket.emit('task_progress_update', task, progress);
+  }
   return h.response().code(200);
 };
 

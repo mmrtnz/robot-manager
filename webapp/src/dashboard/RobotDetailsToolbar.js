@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { red } from '@mui/material/colors';
 
 const TASK_TYPES = ['clean', 'resupply', 'dance'];
 
@@ -38,7 +39,12 @@ const RobotDetailsToolbar = (props) => {
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', mb: 4 }}>
         <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="h6">{bot?.name}</Typography>
+          <Typography variant="h6">
+            {bot?.name}
+            {bot.status === 'error' && (
+              <span style={{ color: red[500], marginLeft: 16 }}>(Error)</span>
+            )}
+          </Typography>
           <Typography variant="subtitle1">
             Current Task: {bot?.task || 'none'} {prettyProgress}
           </Typography>

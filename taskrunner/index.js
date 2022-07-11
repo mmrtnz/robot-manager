@@ -37,7 +37,7 @@ const timeout = async (activity, timeout = 1000) => {
 }
 
 const getChunkOfTasks = async db => {
-  const LIMIT = 2;
+  const LIMIT = 10;
   const dbRef = ref(db, '/tasks');
   // Note: Children with a null value for progress come first, meaning tasks
   // that haven't been started yet.
@@ -51,7 +51,8 @@ const getChunkOfTasks = async db => {
   }
   
   return Object.values(dbTasks).filter(({ progress, status }) => {
-    return (progress || 0) < 100 && (status || '') !== 'error'
+    return (progress || 0) < 100 
+      && (((status || '') !== 'error') && ((status || '') !== 'cancel'))
   });
 }
 
@@ -98,7 +99,7 @@ const resetAllBots = async db => {
 }
 
 const stepFunc = async (task, progress) => {
-  await axios
+  return await axios
     .post(`http://localhost:8080/tasks/update?id=${task.id}`, {
       task,
       progress
@@ -156,7 +157,7 @@ const start = async () => {
     // Wait when all tasks have been processed
     if (len === 0) {
       console.log(`All tasks have been processed waiting ${waitTime} seconds`);
-      waitTime = Math.min(10, waitTime + 1);
+      waitTime = Math.min(5, waitTime + 1);
       await timeout(() => {}, waitTime * 1000);
 
       // Next chunk
@@ -183,11 +184,16 @@ const start = async () => {
             p = 100;
             cancelCurrentTask = false;
           } else {
-            await stepFunc(currentTask, p);
+            // If progressing through task resulted in error we stop said task
+            const result = await stepFunc(currentTask, p);
+            if (result.data === 'error') {
+              console.log('\nError progressing through task!')
+              cancelCurrentTask = true;
+            }
           }
         }, 500);
       }
-      process.stdout.write('\n');
+      process.stdout.write('Complete!\n');
 
       // Next chunk
       taskList = await getChunkOfTasks(db);

@@ -65,36 +65,64 @@ const updateTaskStatus = async (firebase, task, newStatus) => {
   await set(dbRefTask, dbPayloadTask);
 }
 
+// Determines next state of the bot. Includes chance for random error
+const getPayloadBotProgress = (task, newProgress, isComplete, isError) => {
+  const payloadComplete = {
+    status: 'idle',
+    task: '',
+    progress: 0,
+  };
+
+  const payloadError = {
+    status: 'error',
+    task: task.type,
+    progress: newProgress,
+  };
+
+  const payloadBusy = {
+    status: 'busy',
+    task: task.type,
+    progress: newProgress,
+  };
+
+  const payload = isComplete ? payloadComplete
+    : isError ? payloadError
+    : payloadBusy;
+  
+  return {
+    id: task.botId,
+    name: task.botName,
+    ...payload
+  };
+}
+
 const updateTaskProgress = async (firebase, task, newProgress) => {
   const db = getDatabase(firebase);
   const dbRefTask = ref(db, '/tasks/' + task.id);
   const dbRefBot = ref(db, '/bots/' + task.botId);
-
+  
   const isComplete = newProgress >= 100;
+  const isError = Math.random() < .1;
 
   const dbPayloadTask = {
     ...task,
     progress: newProgress,
-    status: isComplete ? 'done' : 'in progress',
+    status: isComplete ? 'done'
+      :  isError ? 'error'
+      : 'in progress',
   };
 
-  const dbPayloadBotComplete = {
-    id: task.botId,
-    name: task.botName,
-    status: isComplete ? 'idle' : 'busy',
-    task: isComplete ? '' : task.type,
-    progress: isComplete ? 0 : newProgress,
-  };
-
-  // TODO: Add spontaneous errors
+  const botUpdates = getPayloadBotProgress(task, newProgress, isComplete, isError);
 
   await set(dbRefTask, dbPayloadTask);
-  await set(dbRefBot, dbPayloadBotComplete);
+  await set(dbRefBot, botUpdates);
 
   // When complete also update duplicate task data in bot
   if (isComplete) {
     console.log('Successful completion')
   }
+
+  return [isError, botUpdates];
 };
 
 const getTasksForBot = async (firebase, botId, limit = null) => {
@@ -119,7 +147,6 @@ const getTasksForBot = async (firebase, botId, limit = null) => {
     return new Date(a.date) > new Date(b.date) ? -1 : 1;
   });
 
-  console.log('sorted', taskList.map(({id, date}) => ({ id, date })));
   return taskList.slice(0, limit || taskList.length);
 };
 

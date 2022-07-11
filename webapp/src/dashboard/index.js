@@ -29,14 +29,13 @@ const fadeIn = keyframes`
 
 const Dashboard = () => {
   const [bots, setBots] = useState({ all: {}, current: null });
-  // const [currentBot, setCurrentBot] = useState(null);
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { globalStore: { user, socket } } = useContext(GlobalContext);
   const theme = useTheme();
 
   // Updates state with latest changes to bot when it's task updates 
-  const refresh = updatedBot => {
+  const updateBotState = updatedBot => {
     const newBots = { 
       all: { ...bots.all, [updatedBot.id]: updatedBot },
       current: bots.current
@@ -76,8 +75,10 @@ const Dashboard = () => {
       return;
     }
 
-    socket.on('task_created', updatedBot => refresh(updatedBot));
-    socket.on('task_stopped', updatedBot => refresh(updatedBot));
+    socket.on('task_created', updatedBot => updateBotState(updatedBot));
+    socket.on('task_stopped', updatedBot => updateBotState(updatedBot));
+    socket.on('task_complete', updatedBot => updateBotState(updatedBot));
+    socket.on('task_progress_error', updatedBot => updateBotState(updatedBot));
     socket.on('task_progress_update', (task, newProgress) => {
       updateTaskProgress(task, newProgress);
     });
