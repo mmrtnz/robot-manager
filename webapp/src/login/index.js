@@ -82,10 +82,8 @@ const Login = props => {
 			submitError: null
 		})
 	};
-	console.log('test');
 	
 	const handleSubmit = () => {
-		console.log('submitting');
 		
 		const [updatedForm, hasError] = validateForm(form);
 		if (hasError) {
@@ -95,7 +93,6 @@ const Login = props => {
 
 		postLogin(form)
 			.then(res => {
-				console.log('res', res);
 				
 				// Persist login credentials
 				Cookies.set('user', JSON.stringify(res), { expires: 1 });

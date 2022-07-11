@@ -2,7 +2,7 @@
 
 // External Dependencies
 const dotenv = require('dotenv');
-const { io } = require('socket.io-client');
+const axios = require('axios');
 const { initializeApp } = require("firebase/app");
 const {
   get,
@@ -35,23 +35,18 @@ const timeout = async activity => {
   })
 }
 
-const updateTaskProgress = async (db, task, newProgress) => {
-  const dbRefTask = ref(db, '/tasks/' + task.id);
+const getChunkOfTasks = async db => {
+  const LIMIT = 2;
+  const dbRef = ref(db, '/tasks');
+  // Note: Children with a null value for progress come first, meaning tasks
+  // that haven't been started yet.
+  const q = query(dbRef, orderByChild('progress'), limitToFirst(LIMIT));
 
-  const dbPayloadTask = {
-    ...task,
-    progress: newProgress,
-    status: 'in progress'
-  };
+  const snapshot = await get(q);
+  const dbTasks = snapshot.val();
 
-  // TODO: Add spontaneous errors
-
-  await set(dbRefTask, dbPayloadTask);
-
-  if (newProgress >= 100) {
-    console.log('Successful completion')
-  }
-};
+  return dbTasks;
+}
 
 // Debugging purposes only
 const resetAllTasks = async db => {
@@ -72,7 +67,38 @@ const resetAllTasks = async db => {
   await set(dbRef, newTasks);
 
   console.log(`Resetted ${Object.keys(newTasks).length} tasks`);
-  process.exit(0);
+}
+
+const resetAllBots = async db => {
+  const dbRef = ref(db, '/bots');
+  const q = query(dbRef);
+  const snapshot = await get(q);
+  const dbBots = snapshot.val();
+
+  const newBots = {};
+  Object.keys(dbBots).forEach(bots => {
+    newBots[bots] = {
+      ...dbBots[bots],
+      progress: 0,
+      status: 'idle',
+      task: '',
+    };
+  });
+  
+  await set(dbRef, newBots);
+
+  console.log(`Resetted ${Object.keys(newBots).length} bots`);
+}
+
+const stepFunc = async (task, progress) => {
+  await axios
+    .post(`http://localhost:8080/tasks/update?id=${task.id}`, {
+      task,
+      progress
+    })
+    .catch(err => {
+      console.log('Error updating progress: ', err)
+    });
 }
 
 const start = async () => {
@@ -80,47 +106,54 @@ const start = async () => {
 
   // Connect to other services
   const firebase = initializeApp(firebaseConfig);
-  const socket = io('http://localhost:8080');
   const db = getDatabase(firebase);
 
   if (process.argv.length === 3 && process.argv[2] === 'reset') {
-    resetAllTasks(db);
-    return;
+    await resetAllTasks(db);
+    await resetAllBots(db);
+    process.exit(0);
   }
 
-  // Get chunk of tasks
-  const dbRef = ref(db, '/tasks');
-  // Note: Children with a null value for progress come first, meaning tasks
-  // that haven't been started yet.
-  const q = query(dbRef, orderByChild('progress'), limitToFirst(2));
-
-  const snapshot = await get(q);
-  const dbTasks = snapshot.val();
+  // Poll for tasks
+  let dbTasks = await getChunkOfTasks(db);
 
   if (!dbTasks) {
     console.log('No tasks found');
     return;
   }
 
-  const taskList = Object.values(dbTasks);
-  const len = taskList.length;
-
-  console.log(`Retreived ${len} task${len > 1 ? 's' : ''}`);
+  // Process tasks
+  let taskList = Object.values(dbTasks);
+  let len = taskList.length;
   
-  // Progress through tasks
-  // Note: forEach runs items in pseudo-parallel. Fall back to for-loop 
-  const step = 10;
-  for (let i = 0; i < taskList.length; i++) {
-    const currentTask = taskList[i];
-    const startingProgress = currentTask?.progress || 0; 
-    console.log('Starting task ', currentTask.id);
+  do {
+    console.log(`Retreived ${len} task${len > 1 ? 's' : ''}`);
+    
+    // Using stdout to log on same line. forEach runs items in pseudo-parallel
+    // so we fall back to for-loop 
+    const step = 10;
+    for (let i = 0; i < taskList.length; i++) {
+      const currentTask = taskList[i];
+      const startingProgress = currentTask?.progress || 0; 
+      process.stdout.write('Starting task ' + currentTask.id);
+  
+      for (let p = startingProgress; p <= 100; p += step) {
+        process.stdout.write('.');
+        await timeout(async () => {
+          await stepFunc(currentTask, p);
+        });
+      }
+      process.stdout.write('\n');
 
-    for (let p = startingProgress; p <= 100; p += step) {
-      await timeout(() => updateTaskProgress(db, currentTask, p));
+      // Next chunk
+      dbTasks = await getChunkOfTasks(db);
+      taskList = Object.values(dbTasks);
+      len = taskList.length;
     }
+  } while (len > 0);
 
-    // console.log('Complete');
-  }
+  console.log('All tasks have been processed');
+  process.exit(0);
 };
 
 start();

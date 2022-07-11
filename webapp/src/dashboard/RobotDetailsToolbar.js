@@ -15,9 +15,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import CancelIcon from '@mui/icons-material/Cancel';
 
-// Internal Dependencies
-import DialogConfirmTaskOverride from './DialogConfirmTaskOverride';
-
 const TASK_TYPES = ['clean', 'resupply', 'dance'];
 
 const RobotDetailsToolbar = (props) => {
@@ -35,12 +32,16 @@ const RobotDetailsToolbar = (props) => {
 
   const isBotBusy = bot.status === 'busy' || bot.status === 'error';
 
+  const prettyProgress = bot?.task !== '' ? `(${bot.progress}%)` : '';
+
   return (
     <>
       <Box sx={{ display: 'flex', flexDirection: 'row', mb: 4 }}>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h6">{bot?.name}</Typography>
-          <Typography variant="subtitle1">Current Task: {bot?.task || 'none'}</Typography>
+          <Typography variant="subtitle1">
+            Current Task: {bot?.task || 'none'} {prettyProgress}
+          </Typography>
         </Box>
 
       <ClickAwayListener onClickAway={handleClickAway}>

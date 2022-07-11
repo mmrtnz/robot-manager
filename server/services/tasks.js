@@ -50,6 +50,38 @@ const createTask = async (firebase, reqPayload) => {
   return dbPayloadBot;
 };
 
+const updateTaskProgress = async (firebase, task, newProgress) => {
+  const db = getDatabase(firebase);
+  const dbRefTask = ref(db, '/tasks/' + task.id);
+  const dbRefBot = ref(db, '/bots/' + task.botId);
+
+  const isComplete = newProgress >= 100;
+
+  const dbPayloadTask = {
+    ...task,
+    progress: newProgress,
+    status: isComplete ? 'done' : 'in progress',
+  };
+
+  const dbPayloadBotComplete = {
+    id: task.botId,
+    name: task.botName,
+    status: 'idle',
+    task: '',
+    progress: 0,
+  };
+
+  // TODO: Add spontaneous errors
+
+  await set(dbRefTask, dbPayloadTask);
+
+  // When complete also update duplicate task data in bot
+  if (isComplete) {
+    console.log('Successful completion')
+    await set(dbRefBot, dbPayloadBotComplete);
+  }
+};
+
 const getTasksForBot = async (firebase, botId, limit = null) => {
   const db = getDatabase(firebase);
   const dbRef = ref(db, '/tasks');
@@ -62,15 +94,22 @@ const getTasksForBot = async (firebase, botId, limit = null) => {
     return [];
   }
 
-  const taskList = Object.values(dbTasks);
+  let taskList = Object.values(dbTasks);
 
   // Sorts tasks in descending order (newest to oldest) 
-  taskList.sort((a, b) => new Date(a.date) < new Date(b.date));
+  taskList = taskList.sort((a, b) => {
+    if (new Date(a.date) === new Date(b.date)) {
+      return 0;
+    }
+    return new Date(a.date) > new Date(b.date) ? -1 : 1;
+  });
 
+  console.log('sorted', taskList.map(({id, date}) => ({ id, date })));
   return taskList.slice(0, limit || taskList.length);
 };
 
 module.exports = {
   createTask,
-  getTasksForBot
+  getTasksForBot,
+  updateTaskProgress
 };

@@ -2,7 +2,7 @@
 
 const { getAll, getBotHistory } = require('./controllers/bots');
 const { login, logout } = require('./controllers/session');
-const { startTask, stopTask } = require('./controllers/tasks');
+const { startTask, stopTask, updateTask } = require('./controllers/tasks');
 
 exports.plugin = {
   name: 'router',
@@ -44,6 +44,16 @@ exports.plugin = {
       method: 'POST',
       path: '/tasks/stop',
       handler: stopTask,
+    });
+    server.route({
+      method: 'POST',
+      path: '/tasks/update',
+      handler: updateTask,
+      // Remove auth for demo purposes. In prod we'd want to secure this for
+      // admin accounts only
+      options: {
+        auth: false
+      }
     });
   }
 }

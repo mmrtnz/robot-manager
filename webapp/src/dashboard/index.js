@@ -35,21 +35,43 @@ const Dashboard = () => {
   const { globalStore: { user, socket } } = useContext(GlobalContext);
   const theme = useTheme();
 
+  // Updates state with latest changes to bot when its task updates 
+  const refresh = updatedBot => {
+    setBots({ ...bots, [updatedBot.id]: updatedBot });
+    if (currentBot?.id === updatedBot.id) {
+      setCurrentBot(updatedBot);
+    }
+  };
+
+  const updateTaskProgress = (task, newProgress) => {
+    console.log('task', task);
+    
+    // console.log(`${task.id} progress ${newProgress}`);
+
+    const updatedBot = {
+      ...bots[task.botId],
+      progress: newProgress,
+      status: newProgress >= 100 ? 'idle' : 'busy'
+    };
+  
+    setBots({
+      ...bots,
+      [task.botId]: updatedBot
+    });
+
+    if (task.botId === currentBot?.id) {
+      setCurrentBot(updatedBot);
+    }
+  };
 
   useEffect(() => {
     if (!socket) {
       return;
     }
 
-    const refresh = updatedBot => {
-      setBots({ ...bots, [updatedBot.id]: updatedBot });
-      if (currentBot?.id === updatedBot.id) {
-        setCurrentBot(updatedBot);
-      }
-    };
-
     socket.on('task_created', refresh);
     socket.on('task_stopped', refresh);
+    socket.on('task_progress_update', updateTaskProgress);
   }, [socket, bots, currentBot]);
   
   useEffect(() => {

@@ -9,6 +9,7 @@ import {
   TableHead,
   TableBody,
   Typography,
+  LinearProgress,
 } from '@mui/material';
 import React from 'react';
 import { blue, brown, red, teal } from '@mui/material/colors';
@@ -64,11 +65,12 @@ const RobotTable = (props) => {
           <TableRow>
             <TableCell>Robot</TableCell>
             <TableCell>Current Task</TableCell>
+            <TableCell>Progress</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {Object.keys(bots).map((botId) => {
-            const { name, status, task } = bots[botId];
+            const { name, status, task, progress } = bots[botId];
             
             const { IconComponent } = getStylesConfig(botId);          
             return (
@@ -88,7 +90,17 @@ const RobotTable = (props) => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  {task}
+                  {task || 'none'}
+                </TableCell>
+                <TableCell>
+                  {status === 'busy' ? (
+                    <>
+                      {progress}%
+                      <LinearProgress variant="determinate" value={progress} />
+                    </>
+                  ) : status === 'error' ? (
+                    <Typography sx={{ color: red[500] }}>Error!</Typography>
+                  ) : 'n/a'}
                 </TableCell>
             </TableRow>
             );

@@ -1,5 +1,5 @@
 // Internal Dependencies
-const { createTask, getTasksForBot } = require('../services/tasks');
+const { createTask, updateTaskProgress } = require('../services/tasks');
 const { stopBot } = require('../services/bots');
 
 const startTask = async (request, h) => {
@@ -55,7 +55,23 @@ const stopTask = async (request, h) => {
   return h.response().code(200);
 }
 
+const updateTask = async (request, h) => {
+  console.log('POST /tasks/update');
+
+  const { firebase, socket } = request.server.app;
+
+  // These request come from task runner via axios which does not stringify its
+  // payloads  
+  const { task, progress } = request.payload;
+
+  await updateTaskProgress(firebase, task, progress);
+  socket.emit('task_progress_update', task, progress);
+
+  return h.response().code(200);
+};
+
 module.exports = {
   startTask,
-  stopTask
+  stopTask,
+  updateTask
 };
