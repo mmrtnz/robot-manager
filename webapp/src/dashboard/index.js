@@ -28,8 +28,8 @@ const fadeIn = keyframes`
 `;
 
 const Dashboard = () => {
-  const [bots, setBots] = useState({});
-  const [currentBot, setCurrentBot] = useState(null);
+  const [bots, setBots] = useState({ all: {}, current: null });
+  // const [currentBot, setCurrentBot] = useState(null);
   const [apiError, setApiError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { globalStore: { user, socket } } = useContext(GlobalContext);
@@ -37,30 +37,38 @@ const Dashboard = () => {
 
   // Updates state with latest changes to bot when it's task updates 
   const refresh = updatedBot => {
-    setBots({ ...bots, [updatedBot.id]: updatedBot });
-    if (currentBot?.id === updatedBot.id) {
-      setCurrentBot(updatedBot);
+    const newBots = { 
+      all: { ...bots.all, [updatedBot.id]: updatedBot },
+      current: bots.current
+    };
+
+    if (bots.current?.id === updatedBot.id) {
+      newBots.current = updatedBot;
     }
+
+    setBots(newBots);
   };
 
   const updateTaskProgress = (task, newProgress) => {
     const updatedBot = {
-      ...bots[task.botId],
+      ...bots.all[task.botId],
       progress: newProgress,
       status: newProgress >= 100 ? 'idle' : 'busy'
     };
   
-    setBots({
-      ...bots,
-      [task.botId]: updatedBot
-    });
+    const newBots = {
+      all: {
+        ...bots.all,
+        [task.botId]: updatedBot
+      },
+      current: bots.current
+    };
 
-    console.log('task.botId', task.botId);
-    console.log('currentBot?.id', currentBot?.id);
-    
-    // if (task.botId === currentBot?.id) {
-    //   setCurrentBot(updatedBot);
-    // }
+    if (task.botId === bots.current?.id) {
+      newBots.current = updatedBot;
+    }
+
+    setBots(newBots);
   };
 
   useEffect(() => {
@@ -73,7 +81,7 @@ const Dashboard = () => {
     socket.on('task_progress_update', (task, newProgress) => {
       updateTaskProgress(task, newProgress);
     });
-  }, [socket, bots, currentBot]);
+  }, [socket, bots.all, bots.current]);
   
   useEffect(() => {
     if (!user) {
@@ -82,7 +90,7 @@ const Dashboard = () => {
 
     getBots(user)
       .then(res => {
-        setBots(res);
+        setBots({ all: res, current: bots.current });
       })
       .catch(err => {
         console.log('err', err);
@@ -111,21 +119,21 @@ const Dashboard = () => {
   }
 
   const handleSelect = newBot => {
-    if (newBot.name !== currentBot?.name) {
-      setCurrentBot(newBot);
+    if (newBot.name !== bots.current?.name) {
+      setBots({ all: bots.all, current: newBot });
     }
   };
-console.log('currentBot', currentBot);
+console.log('bots.current', bots.current);
 
   return (
     <Container className={css`animation: ${fadeIn} .75s ease 1;`}>
       <RobotTable
-        bots={bots}
-        currentSelection={currentBot?.name}
+        bots={bots.all}
+        currentSelection={bots.current?.name}
         onSelect={handleSelect}
         sx={{ mb: 6, mt: 12 }}
       />
-      {currentBot && <RobotDetails bot={currentBot} />}
+      {bots.current && <RobotDetails bot={bots.current} />}
     </Container>
   );
 }
